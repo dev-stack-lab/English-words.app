@@ -9,57 +9,84 @@
 <body>
 
     <div class="container">
-        <h2>単語学習設定</h2>
-        
-        <div class="range-selector">
-            <div class="input-group">
-                <input type="number" id="start-range" value="1" min="1"> 番 〜 
-                <input type="number" id="end-range" value="30" min="1"> 番
-                <button id="set-range-btn">範囲を適用</button>
-            </div>
-            
-            <div class="mode-switch">
-                <label><input type="radio" name="study-mode" value="normal" checked> 通常</label>
-                <label><input type="radio" name="study-mode" value="review"> 復習重視</label>
-            </div>
+        <div class="tab-menu">
+            <button id="tab-study" class="tab-btn active">学習する</button>
+            <button id="tab-list" class="tab-btn">単語一覧</button>
         </div>
 
-        <div class="stats-display">
-            <span>残り: <span id="remaining-count">0</span> 問</span> | 
-            <span class="correct-text">正解: <span id="correct-count">0</span></span> | 
-            <span class="incorrect-text">不正解: <span id="incorrect-count">0</span></span>
-        </div>
+        <div id="view-study" class="view-content">
+            <div class="compact-settings">
+                <div class="range-row">
+                    <input type="number" id="start-range" value="1"> 〜 
+                    <input type="number" id="end-range" value="30">
+                    <button id="set-range-btn">適用</button>
+                    <button id="help-open-btn">？</button>
+                </div>
+                <div class="option-row">
+                    <div class="mode-switch">
+                        <label><input type="radio" name="study-mode" value="normal" checked> 通常</label>
+                        <label><input type="radio" name="study-mode" value="review"> 復習</label>
+                    </div>
+                    <button id="load-favorites-btn">★のみ解く (<span id="fav-count-display">0</span>)</button>
+                </div>
+            </div>
 
-        <div class="card">
-            <div id="id-badge" class="id-badge">ID: --</div>
-            <div id="review-badge" class="review-badge invisible">要復習</div>
-            
-            <div class="word-area">
-                <h1 id="word-display">読み込み中...</h1>
+            <div class="stats-display">
+                残り: <span id="remaining-count">0</span> | 
+                <span class="correct-text">正: <span id="correct-count">0</span></span> | 
+                <span class="incorrect-text">誤: <span id="incorrect-count">0</span></span>
             </div>
-            
-            <div class="meaning-container">
-                <div id="meaning-display" class="meaning invisible">意味がここに表示されます</div>
-            </div>
-            
-            <div id="result-screen" class="result-overlay hidden">
-                <h3>一周クリア！</h3>
-                <div class="result-stats-container">
+
+            <div class="card">
+                <div id="id-badge" class="id-badge">ID: --</div>
+                <button id="fav-toggle-btn" class="fav-btn">☆</button>
+                <div id="review-badge" class="review-badge invisible">要復習</div>
+                <div class="word-area"><h1 id="word-display">読み込み中...</h1></div>
+                <div class="meaning-container"><div id="meaning-display" class="meaning invisible">意味が表示されます</div></div>
+                
+                <div id="result-screen" class="result-overlay hidden">
+                    <h3>一周クリア！</h3>
                     <p id="final-stats"></p>
+                    <div class="result-buttons">
+                        <button id="restart-btn" class="main-btn">再挑戦</button>
+                        <button id="retry-mistakes-btn" class="sub-btn incorrect-btn">誤答を復習</button>
+                    </div>
                 </div>
-                <div class="result-buttons">
-                    <button id="restart-btn" class="main-btn">同じ範囲で最初から</button>
-                    <button id="retry-mistakes-btn" class="sub-btn incorrect-btn">間違えた問題だけ解く</button>
+            </div>
+
+            <div class="button-container">
+                <button id="action-btn" class="main-btn">意味を表示</button>
+                <div id="judgment-btns" class="judgment-group hidden">
+                    <button id="correct-btn" class="sub-btn correct-btn">わかる</button>
+                    <button id="incorrect-btn" class="sub-btn incorrect-btn">わからない</button>
                 </div>
             </div>
         </div>
 
-        <div class="button-container">
-            <button id="action-btn" class="main-btn">意味を表示</button>
-            <div id="judgment-btns" class="judgment-group hidden">
-                <button id="correct-btn" class="sub-btn correct-btn">わかる</button>
-                <button id="incorrect-btn" class="sub-btn incorrect-btn">わからない</button>
+        <div id="view-list" class="view-content hidden">
+            <div class="list-header">
+                <div class="filter-btns">
+                    <button id="filter-all" class="small-btn active">すべて</button>
+                    <button id="filter-fav" class="small-btn">★のみ</button>
+                </div>
+                <div class="search-box"><input type="text" id="list-search" placeholder="単語やIDで検索..."></div>
             </div>
+            <div id="word-list-container" class="word-list-scroll"></div>
+        </div>
+    </div>
+
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>使いかたガイド</h3>
+                <button id="help-close-icon" class="close-icon">&times;</button>
+            </div>
+            <ul class="help-list">
+                <li><strong>適用:</strong> 範囲を決めて開始します。</li>
+                <li><strong>星ボタン:</strong> 単語をお気に入り登録できます。</li>
+                <li><strong>復習モード:</strong> 間違えた単語が後で再出題されます。</li>
+            </ul>
+            <button id="help-close-btn" class="main-btn">閉じる</button>
         </div>
     </div>
 
