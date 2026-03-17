@@ -1,22 +1,21 @@
 body {
     background-color: #f5f7fa;
-    font-family: sans-serif;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
     display: flex; justify-content: center; min-height: 100vh; margin: 0;
 }
-
 .container { width: 95%; max-width: 650px; padding: 20px 0; text-align: center; }
 
 /* タブ */
 .tab-menu { display: flex; gap: 4px; margin-bottom: 15px; background: #e9ecef; padding: 5px; border-radius: 12px; }
-.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; background: none; font-weight: bold; color: #6c757d; }
+.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; background: none; font-weight: bold; color: #6c757d; font-size: 1rem; }
 .tab-btn.active { background: white; color: #007bff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
 
 /* 設定 */
 .compact-settings { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 .range-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-.range-row input { width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; }
+.range-row input { width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-size: 1rem; }
 #set-range-btn { flex: 1; padding: 10px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-#help-open-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; background: #fff; color: #007bff; font-weight: bold; cursor: pointer; }
+#help-open-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; background: #fff; color: #007bff; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
 
 .option-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
 #load-favorites-btn { flex: 1; padding: 10px; background: #ffc107; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
@@ -25,39 +24,43 @@ body {
 .card {
     background: white; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.1);
     margin-bottom: 20px; height: 320px; display: flex; flex-direction: column;
-    justify-content: center; align-items: center; position: relative; border: 1px solid #eee;
+    justify-content: center; align-items: center; position: relative; border: 1px solid #eee; overflow: hidden;
 }
-.id-badge { position: absolute; top: 20px; left: 20px; color: #bbb; }
-.fav-btn { position: absolute; top: 15px; left: 80px; background: none; border: none; font-size: 2rem; color: #ddd; cursor: pointer; }
+.id-badge { position: absolute; top: 20px; left: 20px; color: #bbb; font-size: 0.9rem; }
+.fav-btn { position: absolute; top: 15px; left: 80px; background: none; border: none; font-size: 2.2rem; color: #ddd; cursor: pointer; padding: 0; }
 .fav-btn.active { color: #ffc107; }
+.review-badge { position: absolute; top: 20px; right: 20px; background: #ff9800; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; }
+
 #word-display { font-size: 3.5rem; margin: 0; color: #333; }
 .meaning { font-size: 1.6rem; color: #e63946; font-weight: bold; margin-top: 20px; }
 
 /* ボタン */
-.main-btn, .sub-btn { width: 100%; height: 60px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; }
+.main-btn, .sub-btn { width: 100%; height: 60px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
 .main-btn { background: #007bff; color: white; }
-.judgment-group { display: flex; gap: 15px; }
+.judgment-group { display: flex; gap: 15px; width: 100%; }
 .correct-btn { background: #28a745; color: white; }
 .incorrect-btn { background: #dc3545; color: white; }
 
-/* モーダル（重要：z-indexを高く） */
+/* モーダル */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); display: none; /* 最初は消す */
+    background: rgba(0,0,0,0.7); display: none;
     justify-content: center; align-items: center; z-index: 9999;
 }
 .modal-overlay.active { display: flex; }
-.modal-content { background: white; padding: 25px; border-radius: 20px; width: 85%; max-width: 400px; text-align: left; }
-.close-icon { float: right; background: none; border: none; font-size: 2rem; color: #aaa; cursor: pointer; }
+.modal-content { background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 400px; text-align: left; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.close-icon { background: none; border: none; font-size: 2rem; color: #aaa; cursor: pointer; line-height: 1; }
+.help-list { padding-left: 20px; line-height: 2; color: #444; }
 
-/* 一覧表示 */
+/* 一覧 */
 .word-list-scroll { background: white; border-radius: 12px; height: 500px; overflow-y: auto; border: 1px solid #ddd; margin-top: 10px; }
 .list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
-.list-id { width: 40px; color: #999; }
+.list-id { width: 45px; color: #999; font-size: 0.9rem; }
 .list-info { flex: 1; }
-.list-word { font-weight: bold; font-size: 1.1rem; display: block; }
-.list-meaning { color: #666; font-size: 0.9rem; }
+.list-word { font-weight: bold; font-size: 1.2rem; display: block; color: #333; }
+.list-meaning { color: #666; font-size: 1rem; }
 
 .hidden { display: none !important; }
 .invisible { visibility: hidden; }
-.result-overlay { position: absolute; inset: 0; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 20px; }
+.result-overlay { position: absolute; inset: 0; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
