@@ -1,66 +1,325 @@
-body {
-    background-color: #f5f7fa;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    display: flex; justify-content: center; min-height: 100vh; margin: 0;
+/* --- 全体レイアウト --- */
+body { 
+    background-color: #f5f7fa; 
+    font-family: 'Helvetica Neue', Arial, sans-serif; 
+    display: flex; 
+    justify-content: center; 
+    min-height: 100vh; 
+    margin: 0; 
+    color: #333; 
+    overflow-x: hidden; 
 }
-.container { width: 95%; max-width: 650px; padding: 20px 0; text-align: center; }
-
-/* タブ */
-.tab-menu { display: flex; gap: 4px; margin-bottom: 15px; background: #e9ecef; padding: 5px; border-radius: 12px; }
-.tab-btn { flex: 1; padding: 12px; border: none; border-radius: 10px; cursor: pointer; background: none; font-weight: bold; color: #6c757d; font-size: 1rem; }
-.tab-btn.active { background: white; color: #007bff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-
-/* 設定 */
-.compact-settings { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-.range-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-.range-row input { width: 70px; padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-size: 1rem; }
-#set-range-btn { flex: 1; padding: 10px; background: #007bff; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-#help-open-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #ddd; background: #fff; color: #007bff; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
-
-.option-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; border-top: 1px solid #f0f0f0; padding-top: 12px; }
-#load-favorites-btn { flex: 1; padding: 10px; background: #ffc107; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-/* カード */
-.card {
-    background: white; border-radius: 20px; box-shadow: 0 12px 30px rgba(0,0,0,0.1);
-    margin-bottom: 20px; height: 320px; display: flex; flex-direction: column;
-    justify-content: center; align-items: center; position: relative; border: 1px solid #eee; overflow: hidden;
+.container { 
+    width: 95%; 
+    max-width: 650px; 
+    padding: 20px 0; 
+    text-align: center; 
 }
-.id-badge { position: absolute; top: 20px; left: 20px; color: #bbb; font-size: 0.9rem; }
-.fav-btn { position: absolute; top: 15px; left: 80px; background: none; border: none; font-size: 2.2rem; color: #ddd; cursor: pointer; padding: 0; }
-.fav-btn.active { color: #ffc107; }
-.review-badge { position: absolute; top: 20px; right: 20px; background: #ff9800; color: white; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem; }
 
-#word-display { font-size: 3.5rem; margin: 0; color: #333; }
-.meaning { font-size: 1.6rem; color: #e63946; font-weight: bold; margin-top: 20px; }
+/* --- タブメニュー --- */
+.tab-menu { 
+    display: flex; 
+    gap: 4px; 
+    margin-bottom: 15px; 
+    background: #e9ecef; 
+    padding: 5px; 
+    border-radius: 12px; 
+}
+.tab-btn { 
+    flex: 1; 
+    padding: 12px; 
+    border: none; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    background: none; 
+    font-weight: bold; 
+    color: #6c757d; 
+    transition: 0.2s; 
+}
+.tab-btn.active { 
+    background: white; 
+    color: #007bff; 
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1); 
+}
 
-/* ボタン */
-.main-btn, .sub-btn { width: 100%; height: 60px; border: none; border-radius: 12px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
+/* --- 上部設定エリア --- */
+.compact-settings { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 15px; 
+    margin-bottom: 15px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); 
+}
+.range-row { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 10px; 
+}
+.range-row input { 
+    width: 65px; 
+    padding: 8px; 
+    border: 1px solid #ddd; 
+    border-radius: 6px; 
+    text-align: center; 
+}
+#set-range-btn { 
+    flex: 1; 
+    padding: 10px; 
+    background: #007bff; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
+#help-open-btn { 
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    border: 1px solid #ddd; 
+    background: #fff; 
+    color: #007bff; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
+#load-favorites-btn { 
+    width: 100%; 
+    margin-top: 10px; 
+    padding: 10px; 
+    background: #ffc107; 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    color: #442c00; 
+}
+
+/* --- クイズカード (3D & 高速アニメーション) --- */
+.card-container { 
+    perspective: 1000px; 
+    margin-bottom: 15px; 
+}
+.card { 
+    position: relative; 
+    height: 360px; 
+    width: 100%; 
+}
+
+/* ★裏表の反転速度 (0.15s) */
+.card-inner {
+    position: relative; 
+    width: 100%; 
+    height: 100%;
+    text-align: center; 
+    transition: transform 0.15s ease-out; 
+    transform-style: preserve-3d; 
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.card-inner.is-flipped { transform: rotateY(180deg); }
+
+.card-front, .card-back {
+    position: absolute; 
+    width: 100%; 
+    height: 100%;
+    backface-visibility: hidden; 
+    border-radius: 24px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center;
+    padding: 30px; 
+    box-sizing: border-box; 
+    background: white;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.1); 
+    border: 1px solid #eee;
+}
+.card-back { transform: rotateY(180deg); }
+
+/* ★次の単語へのスライド速度 (0.3s) */
+@keyframes slideNext {
+    0% { opacity: 1; transform: translateX(0); }
+    45% { opacity: 0; transform: translateX(-30px); }
+    55% { opacity: 0; transform: translateX(30px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+.animate-next { animation: slideNext 0.3s ease-in-out; }
+
+/* カード内パーツ */
+.id-badge { 
+    position: absolute; 
+    top: 18px; 
+    left: 20px; 
+    color: #bbb; 
+    font-size: 0.8rem; 
+    font-weight: bold; 
+}
+.fav-btn { 
+    position: absolute; 
+    top: 12px; 
+    left: 75px; 
+    background: none; 
+    border: none; 
+    font-size: 2.3rem; 
+    color: #ddd; 
+    cursor: pointer; 
+    z-index: 10; 
+    transition: transform 0.2s; 
+}
+.fav-btn.active { color: #ffc107; transform: scale(1.1); }
+#word-display { 
+    font-size: 3.5rem; 
+    margin: 0; 
+    color: #333; 
+    word-break: break-all; 
+    line-height: 1.1; 
+    user-select: none; 
+}
+.meaning { 
+    font-size: 1.8rem; 
+    color: #e63946; 
+    font-weight: bold; 
+    user-select: none; 
+}
+
+/* --- 判定ボタンエリア --- */
+.button-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+}
+/* リザルト画面が表示されている時はボタンを消す */
+#view-study:has(#result-screen:not(.hidden)) .button-container {
+    display: none;
+}
+
+.main-btn, .sub-btn { 
+    width: 100%; 
+    height: 62px; 
+    border: none; 
+    border-radius: 12px; 
+    font-size: 1.2rem; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: 0.1s; 
+}
 .main-btn { background: #007bff; color: white; }
-.judgment-group { display: flex; gap: 15px; width: 100%; }
+.judgment-group { display: flex; gap: 12px; }
 .correct-btn { background: #28a745; color: white; }
 .incorrect-btn { background: #dc3545; color: white; }
+.main-btn:active, .sub-btn:active { transform: scale(0.97); }
 
-/* モーダル */
-.modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); display: none;
-    justify-content: center; align-items: center; z-index: 9999;
+/* --- 単語リスト画面 --- */
+.list-header { margin-bottom: 15px; display: flex; flex-direction: column; gap: 15px; }
+.search-box input { 
+    width: 100%; 
+    padding: 14px 20px; 
+    border: 2px solid #e0e6ed; 
+    border-radius: 25px; 
+    outline: none; 
+    box-sizing: border-box; 
+    font-size: 1rem; 
+}
+.filter-switch { 
+    display: flex; 
+    background: #eee; 
+    padding: 3px; 
+    border-radius: 20px; 
+    width: fit-content; 
+    margin: 0 auto; 
+}
+.filter-btn { 
+    padding: 8px 25px; 
+    border: none; 
+    background: none; 
+    border-radius: 17px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    color: #777; 
+    transition: 0.3s; 
+}
+.filter-btn.active { 
+    background: white; 
+    color: #333; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+}
+.word-list-scroll { 
+    background: white; 
+    border-radius: 15px; 
+    height: 450px; 
+    overflow-y: auto; 
+    border: 1px solid #ddd; 
+}
+.list-item { 
+    display: flex; 
+    align-items: center; 
+    padding: 16px; 
+    border-bottom: 1px solid #f0f0f0; 
+    text-align: left; 
+}
+
+/* --- モーダル (使いかたガイド) --- */
+.modal-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0,0,0,0.6); 
+    backdrop-filter: blur(4px); 
+    display: none; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 9999; 
 }
 .modal-overlay.active { display: flex; }
-.modal-content { background: white; padding: 30px; border-radius: 20px; width: 85%; max-width: 400px; text-align: left; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-.close-icon { background: none; border: none; font-size: 2rem; color: #aaa; cursor: pointer; line-height: 1; }
-.help-list { padding-left: 20px; line-height: 2; color: #444; }
+.modal-content { 
+    background: white; 
+    padding: 30px; 
+    border-radius: 24px; 
+    width: 90%; 
+    max-width: 380px; 
+    position: relative; 
+    animation: modalShow 0.3s ease-out; 
+}
+@keyframes modalShow { 
+    from { transform: translateY(20px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+.close-icon { 
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    background: #f0f2f5; 
+    border: none; 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    font-size: 20px; 
+    color: #888; 
+    cursor: pointer; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transition: 0.2s; 
+}
+.close-icon:hover { 
+    background: #e4e6e9; 
+    color: #333; 
+    transform: rotate(90deg); 
+}
+.help-list { list-style: none; padding: 0; margin-bottom: 20px; }
+.help-list li { margin-bottom: 10px; font-size: 0.95rem; text-align: left; }
+.help-list li strong { color: #007bff; min-width: 120px; display: inline-block; }
 
-/* 一覧 */
-.word-list-scroll { background: white; border-radius: 12px; height: 500px; overflow-y: auto; border: 1px solid #ddd; margin-top: 10px; }
-.list-item { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #eee; text-align: left; }
-.list-id { width: 45px; color: #999; font-size: 0.9rem; }
-.list-info { flex: 1; }
-.list-word { font-weight: bold; font-size: 1.2rem; display: block; color: #333; }
-.list-meaning { color: #666; font-size: 1rem; }
-
+/* --- ユーティリティ --- */
 .hidden { display: none !important; }
-.invisible { visibility: hidden; }
-.result-overlay { position: absolute; inset: 0; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; }
+.result-overlay { 
+    position: absolute; 
+    inset: 0; 
+    background: white; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 100; 
+    border-radius: 24px; 
+}
