@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シスタン学習アプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h2>単語学習設定</h2>
+        
+        <div class="range-selector">
+            <div class="input-group">
+                <input type="number" id="start-range" value="1" min="1"> 番 〜 
+                <input type="number" id="end-range" value="30" min="1"> 番
+                <button id="set-range-btn">範囲を適用</button>
+            </div>
+            
+            <div class="mode-switch">
+                <label><input type="radio" name="study-mode" value="normal" checked> 通常</label>
+                <label><input type="radio" name="study-mode" value="review"> 復習重視</label>
+            </div>
+        </div>
+
+        <div class="stats-display">
+            <span>残り: <span id="remaining-count">0</span> 問</span> | 
+            <span class="correct-text">正解: <span id="correct-count">0</span></span> | 
+            <span class="incorrect-text">不正解: <span id="incorrect-count">0</span></span>
+        </div>
+
+        <div class="card">
+            <div id="id-badge" class="id-badge">ID: --</div>
+            <div id="review-badge" class="review-badge invisible">要復習</div>
+            
+            <div class="word-area">
+                <h1 id="word-display">読み込み中...</h1>
+            </div>
+            
+            <div class="meaning-container">
+                <div id="meaning-display" class="meaning invisible">意味がここに表示されます</div>
+            </div>
+            
+            <div id="result-screen" class="result-overlay hidden">
+                <h3>一周クリア！</h3>
+                <div class="result-stats-container">
+                    <p id="final-stats"></p>
+                </div>
+                <div class="result-buttons">
+                    <button id="restart-btn" class="main-btn">同じ範囲で最初から</button>
+                    <button id="retry-mistakes-btn" class="sub-btn incorrect-btn">間違えた問題だけ解く</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button id="action-btn" class="main-btn">意味を表示</button>
+            <div id="judgment-btns" class="judgment-group hidden">
+                <button id="correct-btn" class="sub-btn correct-btn">わかる</button>
+                <button id="incorrect-btn" class="sub-btn incorrect-btn">わからない</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
