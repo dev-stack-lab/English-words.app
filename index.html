@@ -48,13 +48,18 @@
                     
                     <button id="fav-toggle-btn" class="fav-btn">☆</button>
 
-                    <div id="result-screen" class="result-overlay hidden">
-                        <h3>一周クリア！</h3>
-                        <p id="final-stats"></p>
-                        <div class="result-buttons">
-                            <button id="restart-btn" class="main-btn">最初から再挑戦</button>
-                            <button id="retry-mistakes-btn" class="sub-btn incorrect-btn">誤答のみ復習</button>
-                        </div>
+                   <div id="result-screen" class="result-overlay hidden">
+                       <h3>一周クリア！</h3>
+                       <p id="final-stats"></p>
+                       <div class="bulk-action-row" style="margin-bottom: 15px;">
+                           <button id="fav-all-mistakes-btn" class="sub-btn" style="background: #ffc107; color: #333; font-weight: bold; width: 100%;">
+                               今回の誤答 (<span id="mistake-count-final">0</span>件) をすべて★に登録
+                           </button>
+                       </div>
+                       <div class="result-buttons">
+                           <button id="restart-btn" class="main-btn">最初から再挑戦</button>
+                           <button id="retry-mistakes-btn" class="sub-btn incorrect-btn">誤答のみ復習</button>
+                       </div>
                     </div>
                 </div>
             </div>
