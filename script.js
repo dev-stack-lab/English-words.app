@@ -128,11 +128,55 @@ function nextWord() {
     setTimeout(() => mainCard.classList.remove('animate-next'), 300);
 }
 
+// --- 修正・追加する箇所 ---
+
+// 1. showResult関数を更新（誤答数の表示とボタンの制御）
 function showResult() {
     resultScreen.classList.remove('hidden');
     buttonContainer.classList.add('hidden');
     localStorage.removeItem('study_progress');
+    
+    // リザルト画面に誤答数を反映
+    const mistakeCount = mistakeWords.length;
+    document.getElementById('mistake-count-final').textContent = mistakeCount;
+    
+    // 誤答がない場合はボタンを隠す
+    const favAllBtn = document.getElementById('fav-all-mistakes-btn');
+    if (favAllBtn) {
+        favAllBtn.style.display = mistakeCount > 0 ? 'block' : 'none';
+    }
+
+    // 最終スタッツ表示（既存の処理）
+    const correct = document.getElementById('correct-count').textContent;
+    const incorrect = document.getElementById('incorrect-count').textContent;
+    document.getElementById('final-stats').textContent = `正解: ${correct} / 誤答: ${incorrect}`;
 }
+
+// 2. 誤答をすべてお気に入りにする関数を追加
+function favoriteAllMistakes() {
+    if (mistakeWords.length === 0) return;
+
+    let addedCount = 0;
+    mistakeWords.forEach(word => {
+        if (!favoriteIds.includes(word.id)) {
+            favoriteIds.push(word.id);
+            addedCount++;
+        }
+    });
+
+    if (addedCount > 0) {
+        localStorage.setItem('fav_ids', JSON.stringify(favoriteIds));
+        updateFavCount();
+        alert(`${addedCount}件の単語を★に登録しました！`);
+        // 登録後はボタンを無効化または非表示にする
+        document.getElementById('fav-all-mistakes-btn').style.display = 'none';
+    } else {
+        alert("すべての誤答単語は既に★に登録されています。");
+    }
+}
+
+// 3. イベントリスナーの設定（既存の onclick 設定が並んでいる場所に追加）
+document.getElementById('fav-all-mistakes-btn').onclick = favoriteAllMistakes;
 
 function toggleMeaning() {
     if (!resultScreen.classList.contains('hidden')) return;
