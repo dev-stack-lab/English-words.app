@@ -217,3 +217,19 @@ body.dark-mode .meaning { color: #ffffff !important; }
 body.dark-mode hr { border-top-color: var(--border-color); }
 body.dark-mode .tab-menu { background: #334155; }
 body.dark-mode .tab-btn.active { background: var(--card-bg); }
+
+/* カードが反転していない時、裏面の星を物理的に隠す */
+.card-inner:not(.is-flipped) .card-back .fav-btn {
+    display: none;
+}
+
+/* カードが反転している時、表面の星を物理的に隠す */
+.card-inner.is-flipped .card-front .fav-btn {
+    display: none;
+}
+
+/* スマホでのボタンの青いハイライトを消す（おまけ） */
+.fav-btn {
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+}
