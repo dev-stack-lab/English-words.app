@@ -116,11 +116,10 @@ function displayWord(wordObj) {
     else if (textLen > 8) wordDisplay.style.fontSize = "2.8rem";
     else wordDisplay.style.fontSize = "3.5rem";
 
-    // 両面の星ボタンを更新
-    const favBtns = document.querySelectorAll('.fav-toggle-btn');
+    // 両面の星ボタンの表示を同期
     const isFav = favoriteIds.includes(wordObj.id);
-    favBtns.forEach(btn => {
-        btn.textContent = getStar(wordObj.id);
+    document.querySelectorAll('.fav-toggle-btn').forEach(btn => {
+        btn.textContent = isFav ? '★' : '☆';
         btn.classList.toggle('active', isFav);
     });
 
@@ -173,7 +172,13 @@ function toggleMeaning() {
     document.getElementById('action-btn').textContent = isFlipped ? "意味を表示" : "意味を隠す";
 }
 
-cardInner.onclick = toggleMeaning;
+// カードのクリックイベント（星ボタン以外）
+cardInner.onclick = (e) => {
+    // クリックされたのが星ボタン（またはその中の文字）でなければ反転
+    if (!e.target.closest('.fav-toggle-btn')) {
+        toggleMeaning();
+    }
+};
 document.getElementById('action-btn').onclick = toggleMeaning;
 
 function judge(isCorrect) {
@@ -240,7 +245,6 @@ function toggleFav(id) {
     localStorage.setItem('fav_ids', JSON.stringify(favoriteIds));
     updateFavCount();
     
-    // 画面上のすべての星ボタンの表示を同期
     const isFav = favoriteIds.includes(id);
     document.querySelectorAll('.fav-toggle-btn').forEach(btn => {
         btn.textContent = isFav ? '★' : '☆';
@@ -248,10 +252,12 @@ function toggleFav(id) {
     });
 }
 
-// カード上の星ボタンクリック（前面・背面両方に対応）
+// 星ボタン単体へのクリックイベント設定
 document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('fav-toggle-btn')) {
-        e.stopPropagation();
+    const btn = e.target.closest('.fav-toggle-btn');
+    if (btn) {
+        e.stopPropagation(); // カード反転を防止
+        e.preventDefault();
         toggleFav(window.currentWord.id);
     }
 });
