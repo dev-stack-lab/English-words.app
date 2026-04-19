@@ -11,6 +11,7 @@
         <div class="tab-menu">
             <button id="tab-study" class="tab-btn active">学習する</button>
             <button id="tab-list" class="tab-btn">単語一覧</button>
+            <button id="tab-settings" class="tab-btn">設定</button>
         </div>
 
         <div id="view-study" class="view-content">
@@ -23,7 +24,6 @@
                 </div>
                 <div class="option-row">
                     <button id="load-favorites-btn">★のみ解く (<span id="fav-count-display">0</span>)</button>
-                    <button id="dark-mode-toggle" class="sub-btn dark-btn">🌙 ダークモード</button>
                 </div>
             </div>
 
@@ -38,16 +38,16 @@
                     <div class="card-inner" id="card-inner">
                         <div class="card-front">
                             <div class="id-badge" id="id-badge-front">ID: --</div>
+                            <button class="fav-btn fav-toggle-btn">☆</button>
                             <h1 id="word-display">読み込み中...</h1>
                         </div>
                         <div class="card-back">
                             <div class="id-badge" id="id-badge-back">ID: --</div>
+                            <button class="fav-btn fav-toggle-btn">☆</button>
                             <div id="meaning-display" class="meaning">意味が表示されます</div>
                         </div>
                     </div>
                     
-                    <button id="fav-toggle-btn" class="fav-btn">☆</button>
-
                    <div id="result-screen" class="result-overlay hidden">
                        <h3>一周クリア！</h3>
                        <p id="final-stats"></p>
@@ -86,6 +86,34 @@
             </div>
             <div id="word-list-container" class="word-list-scroll"></div>
         </div>
+
+        <div id="view-settings" class="view-content hidden">
+            <div class="compact-settings">
+                <div class="setting-item-group">
+                    <div class="setting-row">
+                        <span>ダークモード</span>
+                        <button id="dark-mode-toggle-settings" class="sub-btn" style="width: auto; padding: 0 15px; height: 40px; font-size: 0.9rem;">🌙 ダークモード</button>
+                    </div>
+                    <hr>
+                    <div class="setting-row">
+                        <span>問題をシャッフルする</span>
+                        <input type="checkbox" id="shuffle-toggle" style="width: 20px; height: 20px;">
+                    </div>
+                    <hr>
+                    <div class="setting-row">
+                        <span>出題形式</span>
+                        <select id="question-mode" style="padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="en-ja">英語 → 日本語</option>
+                            <option value="ja-en">日本語 → 英語</option>
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="setting-row" style="margin-top: 10px;">
+                        <button id="clear-all-favs-btn" class="sub-btn" style="background: #ef4444; color: white; height: 45px; font-size: 0.95rem;">お気に入りをすべて解除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="help-modal" class="modal-overlay">
@@ -97,7 +125,6 @@
                 </div>
                 <button id="help-close-icon" class="close-icon">&times;</button>
             </div>
-
             <div id="help-guide-content">
                 <ul class="help-list">
                     <li><strong>中央タップ/Space:</strong> カードを反転。</li>
@@ -106,23 +133,16 @@
                     <li><strong>星ボタン:</strong> 苦手な単語をチェック。</li>
                 </ul>
                 <div class="feedback-box">
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdHSGnIFEd-v2-WndlVyD83elhbhNm5VcRY4HtlsZS0eN50Bw/viewform" target="_blank" rel="noopener noreferrer" class="feedback-text-link">
-                        フィードバックを送る ↗
-                    </a>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdHSGnIFEd-v2-WndlVyD83elhbhNm5VcRY4HtlsZS0eN50Bw/viewform" target="_blank" rel="noopener noreferrer" class="feedback-text-link">フィードバックを送る ↗</a>
                 </div>
             </div>
-
             <div id="help-update-content" class="hidden">
                 <ul class="help-list update-history">
+                    <li><strong>v1.7.0:</strong> 星ボタンの反転アニメーション対応</li>
+                    <li><strong>v1.6.0:</strong> 設定タブの追加（シャッフル、出題形式）</li>
                     <li><strong>v1.5.0:</strong> ダークモードの追加</li>
-                    <li><strong>v1.4.0:</strong> 戻っても次の単語がリセットされないよう改善</li>
-                    <li><strong>v1.3.0:</strong> タブを閉じても進行状況が保存されるよう改善</li>
-                    <li><strong>v1.2.0:</strong> 複数回「戻る」機能、更新履歴タブを追加</li>
-                    <li><strong>v1.1.0:</strong> 検索機能の修正・デザイン改善</li>
-                    <li><strong>v1.0.0:</strong> アプリ公開</li>
                 </ul>
             </div>
-
             <button id="help-close-btn" class="main-btn">閉じる</button>
         </div>
     </div>
