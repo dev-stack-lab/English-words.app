@@ -1,8 +1,9 @@
 let allWords = [], unlearnedWords = [], mistakeWords = [];
 let favoriteIds = JSON.parse(localStorage.getItem('fav_ids')) || [];
 let historyStack = [];
-// 追加：戻った時に「次に出るはずだった単語」を保持するスタック
 let forwardStack = [];
+let isShuffle = false;
+let questionMode = 'en-ja';
 
 const wordDisplay = document.getElementById('word-display');
 const meaningDisplay = document.getElementById('meaning-display');
@@ -15,24 +16,27 @@ const mainCard = document.getElementById('main-card');
 const buttonContainer = document.querySelector('.button-container');
 
 // タブ制御
-document.getElementById('tab-study').onclick = () => {
-    document.getElementById('tab-study').classList.add('active'); document.getElementById('tab-list').classList.remove('active');
-    document.getElementById('view-study').classList.remove('hidden'); document.getElementById('view-list').classList.add('hidden');
-};
+function switchView(targetId, btnId) {
+    document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(targetId).classList.remove('hidden');
+    document.getElementById(btnId).classList.add('active');
+}
+
+document.getElementById('tab-study').onclick = () => switchView('view-study', 'tab-study');
 document.getElementById('tab-list').onclick = () => {
-    document.getElementById('tab-list').classList.add('active'); document.getElementById('tab-study').classList.remove('active');
-    document.getElementById('view-list').classList.remove('hidden'); document.getElementById('view-study').classList.add('hidden');
+    switchView('view-list', 'tab-list');
     renderWordList();
 };
+document.getElementById('tab-settings').onclick = () => switchView('view-settings', 'tab-settings');
 
-// --- 進行状況の保存・復元 ---
 function saveProgress() {
     if (!window.currentWord) return;
     const data = {
         unlearnedWords: unlearnedWords,
         mistakeWords: mistakeWords,
         historyStack: historyStack,
-        forwardStack: forwardStack, // 追加
+        forwardStack: forwardStack,
         correctCount: document.getElementById('correct-count').textContent,
         incorrectCount: document.getElementById('incorrect-count').textContent,
         currentWord: window.currentWord,
@@ -49,7 +53,7 @@ function loadProgress() {
     unlearnedWords = data.unlearnedWords || [];
     mistakeWords = data.mistakeWords || [];
     historyStack = data.historyStack || [];
-    forwardStack = data.forwardStack || []; // 追加
+    forwardStack = data.forwardStack || [];
     document.getElementById('correct-count').textContent = data.correctCount || 0;
     document.getElementById('incorrect-count').textContent = data.incorrectCount || 0;
     document.getElementById('remaining-count').textContent = unlearnedWords.length;
@@ -64,7 +68,6 @@ function loadProgress() {
     return true;
 }
 
-// --- 基本機能 ---
 async function loadCSV() {
     try {
         const res = await fetch('words.csv?t=' + Date.now());
@@ -99,14 +102,28 @@ function displayWord(wordObj) {
     window.currentWord = wordObj;
     document.getElementById('id-badge-front').textContent = `ID: ${wordObj.id}`;
     document.getElementById('id-badge-back').textContent = `ID: ${wordObj.id}`;
-    wordDisplay.textContent = wordObj.word;
-    meaningDisplay.textContent = wordObj.meaning;
-    if (wordObj.word.length > 12) wordDisplay.style.fontSize = "2.2rem";
-    else if (wordObj.word.length > 8) wordDisplay.style.fontSize = "2.8rem";
+    
+    if (questionMode === 'en-ja') {
+        wordDisplay.textContent = wordObj.word;
+        meaningDisplay.textContent = wordObj.meaning;
+    } else {
+        wordDisplay.textContent = wordObj.meaning;
+        meaningDisplay.textContent = wordObj.word;
+    }
+
+    const textLen = wordDisplay.textContent.length;
+    if (textLen > 12) wordDisplay.style.fontSize = "2.2rem";
+    else if (textLen > 8) wordDisplay.style.fontSize = "2.8rem";
     else wordDisplay.style.fontSize = "3.5rem";
-    const favBtn = document.getElementById('fav-toggle-btn');
-    favBtn.textContent = getStar(wordObj.id);
-    favBtn.classList.toggle('active', favoriteIds.includes(wordObj.id));
+
+    // 両面の星ボタンを更新
+    const favBtns = document.querySelectorAll('.fav-toggle-btn');
+    const isFav = favoriteIds.includes(wordObj.id);
+    favBtns.forEach(btn => {
+        btn.textContent = getStar(wordObj.id);
+        btn.classList.toggle('active', isFav);
+    });
+
     cardInner.classList.remove('is-flipped');
     document.getElementById('action-btn').textContent = "意味を表示";
 }
@@ -116,11 +133,9 @@ function nextWord() {
     mainCard.classList.add('animate-next');
     setTimeout(() => {
         if (forwardStack.length > 0) {
-            // 【修正】戻るから訂正した後は、退避させていた単語を表示
             displayWord(forwardStack.pop());
         } else {
-            // 通常時はランダム
-            const idx = Math.floor(Math.random() * unlearnedWords.length);
+            const idx = isShuffle ? Math.floor(Math.random() * unlearnedWords.length) : 0;
             displayWord(unlearnedWords[idx]);
         }
         saveProgress();
@@ -128,55 +143,28 @@ function nextWord() {
     setTimeout(() => mainCard.classList.remove('animate-next'), 300);
 }
 
-// --- 修正・追加する箇所 ---
-
-// 1. showResult関数を更新（誤答数の表示とボタンの制御）
 function showResult() {
     resultScreen.classList.remove('hidden');
     buttonContainer.classList.add('hidden');
     localStorage.removeItem('study_progress');
-    
-    // リザルト画面に誤答数を反映
     const mistakeCount = mistakeWords.length;
     document.getElementById('mistake-count-final').textContent = mistakeCount;
-    
-    // 誤答がない場合はボタンを隠す
-    const favAllBtn = document.getElementById('fav-all-mistakes-btn');
-    if (favAllBtn) {
-        favAllBtn.style.display = mistakeCount > 0 ? 'block' : 'none';
-    }
-
-    // 最終スタッツ表示（既存の処理）
     const correct = document.getElementById('correct-count').textContent;
     const incorrect = document.getElementById('incorrect-count').textContent;
     document.getElementById('final-stats').textContent = `正解: ${correct} / 誤答: ${incorrect}`;
 }
 
-// 2. 誤答をすべてお気に入りにする関数を追加
-function favoriteAllMistakes() {
-    if (mistakeWords.length === 0) return;
-
-    let addedCount = 0;
+document.getElementById('fav-all-mistakes-btn').onclick = () => {
+    let added = 0;
     mistakeWords.forEach(word => {
-        if (!favoriteIds.includes(word.id)) {
-            favoriteIds.push(word.id);
-            addedCount++;
-        }
+        if (!favoriteIds.includes(word.id)) { favoriteIds.push(word.id); added++; }
     });
-
-    if (addedCount > 0) {
+    if (added > 0) {
         localStorage.setItem('fav_ids', JSON.stringify(favoriteIds));
         updateFavCount();
-        alert(`${addedCount}件の単語を★に登録しました！`);
-        // 登録後はボタンを無効化または非表示にする
-        document.getElementById('fav-all-mistakes-btn').style.display = 'none';
-    } else {
-        alert("すべての誤答単語は既に★に登録されています。");
+        alert(`${added}件を登録しました。`);
     }
-}
-
-// 3. イベントリスナーの設定（既存の onclick 設定が並んでいる場所に追加）
-document.getElementById('fav-all-mistakes-btn').onclick = favoriteAllMistakes;
+};
 
 function toggleMeaning() {
     if (!resultScreen.classList.contains('hidden')) return;
@@ -210,15 +198,11 @@ function judge(isCorrect) {
 
 function undo() {
     if (historyStack.length === 0) return;
-    // 【修正】現在の単語（間違えて判定したものなど）を forwardStack に退避
     forwardStack.push(window.currentWord);
-    
     const last = historyStack.pop();
     document.getElementById('correct-count').textContent = last.correctCount;
     document.getElementById('incorrect-count').textContent = last.incorrectCount;
-    if (!unlearnedWords.find(w => w.id === last.word.id)) {
-        unlearnedWords.push(last.word);
-    }
+    if (!unlearnedWords.find(w => w.id === last.word.id)) unlearnedWords.push(last.word);
     if (!last.wasCorrect) mistakeWords.pop();
     document.getElementById('remaining-count').textContent = unlearnedWords.length;
     displayWord(last.word);
@@ -255,18 +239,42 @@ function toggleFav(id) {
     else favoriteIds.push(id);
     localStorage.setItem('fav_ids', JSON.stringify(favoriteIds));
     updateFavCount();
+    
+    // 画面上のすべての星ボタンの表示を同期
+    const isFav = favoriteIds.includes(id);
+    document.querySelectorAll('.fav-toggle-btn').forEach(btn => {
+        btn.textContent = isFav ? '★' : '☆';
+        btn.classList.toggle('active', isFav);
+    });
 }
 
-document.getElementById('fav-toggle-btn').onclick = (e) => {
-    e.stopPropagation();
-    toggleFav(window.currentWord.id);
-    displayWord(window.currentWord);
-};
+// カード上の星ボタンクリック（前面・背面両方に対応）
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('fav-toggle-btn')) {
+        e.stopPropagation();
+        toggleFav(window.currentWord.id);
+    }
+});
 
 document.getElementById('load-favorites-btn').onclick = () => {
     const favs = allWords.filter(w => favoriteIds.includes(w.id));
     if (favs.length > 0) startSession(favs);
     else alert("お気に入り登録がありません。");
+};
+
+document.getElementById('shuffle-toggle').onchange = (e) => { isShuffle = e.target.checked; };
+document.getElementById('question-mode').onchange = (e) => { 
+    questionMode = e.target.value; 
+    if(window.currentWord) displayWord(window.currentWord);
+};
+document.getElementById('clear-all-favs-btn').onclick = () => {
+    if(confirm("すべてのお気に入りを解除しますか？")) {
+        favoriteIds = [];
+        localStorage.setItem('fav_ids', JSON.stringify(favoriteIds));
+        updateFavCount();
+        alert("解除しました。");
+        if(window.currentWord) displayWord(window.currentWord);
+    }
 };
 
 function renderWordList() {
@@ -304,22 +312,14 @@ if (tG) {
     tG.onclick = () => { tG.classList.add('active'); tU.classList.remove('active'); cG.classList.remove('hidden'); cU.classList.add('hidden'); };
     tU.onclick = () => { tU.classList.add('active'); tG.classList.remove('active'); cU.classList.remove('hidden'); cG.classList.add('hidden'); };
 }
-const darkToggle = document.getElementById('dark-mode-toggle');
 
-// 保存されたモードを読み込む
-if (localStorage.getItem('dark_mode') === 'enabled') {
-    document.body.classList.add('dark-mode');
-    if (darkToggle) darkToggle.textContent = '☀️ ライトモード';
-}
-
-darkToggle.onclick = () => {
-    document.body.classList.toggle('dark-mode');
-    const isDark = document.body.classList.contains('dark-mode');
-    
-    // 状態を保存
+const darkToggleSettings = document.getElementById('dark-mode-toggle-settings');
+function updateDarkModeUI(isDark) {
+    document.body.classList.toggle('dark-mode', isDark);
+    darkToggleSettings.textContent = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
     localStorage.setItem('dark_mode', isDark ? 'enabled' : 'disabled');
-    
-    // ボタンのテキスト切り替え
-    darkToggle.textContent = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
-};
+}
+if (localStorage.getItem('dark_mode') === 'enabled') updateDarkModeUI(true);
+darkToggleSettings.onclick = () => updateDarkModeUI(!document.body.classList.contains('dark-mode'));
+
 loadCSV();
