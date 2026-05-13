@@ -347,4 +347,6 @@ function updateDarkModeUI(isDark) {
 if (localStorage.getItem('dark_mode') === 'enabled') updateDarkModeUI(true);
 darkToggleSettings.onclick = () => updateDarkModeUI(!document.body.classList.contains('dark-mode'));
 
-loadCSV();
+loadCSV().then(() => {
+    loadSettings(); 
+});
