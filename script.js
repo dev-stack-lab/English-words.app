@@ -8,7 +8,7 @@ let questionMode = 'en-ja';
 const wordDisplay = document.getElementById('word-display');
 const meaningDisplay = document.getElementById('meaning-display');
 const favCountDisplay = document.getElementById('fav-count-display');
-const container = document.getElementById('word-list-container');
+const wordListContainer = document.getElementById('word-list-container');
 const resultScreen = document.getElementById('result-screen');
 const modal = document.getElementById('help-modal');
 const cardInner = document.getElementById('card-inner');
@@ -46,27 +46,6 @@ function saveProgress() {
     localStorage.setItem('study_progress', JSON.stringify(data));
 }
 
-function saveSettings() {
-    const settings = {
-        isShuffle: isShuffle,
-        questionMode: questionMode,
-        darkMode: document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled'
-    };
-    localStorage.setItem('app_settings', JSON.stringify(settings));
-}
-
-function loadSettings() {
-    const saved = localStorage.getItem('app_settings');
-    if (saved) {
-        const settings = JSON.parse(saved);
-        isShuffle = settings.isShuffle;
-        questionMode = settings.questionMode;
-        document.getElementById('shuffle-toggle').checked = isShuffle;
-        document.getElementById('question-mode').value = questionMode;
-        if (settings.darkMode === 'enabled') updateDarkModeUI(true);
-    }
-}
-
 function loadProgress() {
     const saved = localStorage.getItem('study_progress');
     if (!saved) return false;
@@ -91,47 +70,17 @@ function loadProgress() {
 
 async function loadCSV() {
     try {
-        // キャッシュを避けるためタイムスタンプを付与
-        const res = await fetch('./english_only.csv?t=' + Date.now());
+        const res = await fetch('english_only.csv?t=' + Date.now());
         const txt = await res.text();
-        
         allWords = txt.trim().split(/\r?\n/).map(line => {
-            // カンマまたはタブで分割
             const p = line.split(/[,\t]/);
-            if (p.length >= 2) {
-                return { 
-                    id: parseInt(p[0]), 
-                    word: p[1].trim(), 
-                    // 3列目以降を意味として結合
-                    meaning: p.slice(2).join(',').replace(/"/g, '').trim() 
-                };
-            }
+            if (p.length >= 2) return { id: parseInt(p[0]), word: p[1].trim(), meaning: p.slice(2).join(',').replace(/"/g, '').trim() };
             return null;
-        }).filter(w => {
-            // 基本チェック：データが存在し、IDが数値であること
-            if (!w || isNaN(w.id)) return false;
-
-            // 1. IDによる制限（ターゲット番号外をカット）
-            if (w.id >= 2027) return false;
-
-            // 2. アルファベットを含まないものは英単語ではないと判断（★最強のフィルター）
-            // 英単語であれば、必ず a-z または A-Z が含まれるはずです
-            const hasAlphabet = /[a-zA-Z]/.test(w.word);
-            if (!hasAlphabet) return false;
-
-            // 3. 漢字が含まれているものは除外
-            const hasKanji = /[\u4E00-\u9FFF]/.test(w.word);
-            if (hasKanji) return false;
-
-            return true;
-        });
-        
+        }).filter(w => w && !isNaN(w.id));
         updateFavCount();
+        loadSettings(); 
         if (!loadProgress()) updateRange();
-    } catch (e) { 
-        console.error(e);
-        wordDisplay.textContent = "CSVエラー"; 
-    }
+    } catch (e) { wordDisplay.textContent = "CSVエラー"; }
 }
 
 function updateFavCount() { favCountDisplay.textContent = favoriteIds.length; }
@@ -168,6 +117,7 @@ function displayWord(wordObj) {
     else if (textLen > 8) wordDisplay.style.fontSize = "2.8rem";
     else wordDisplay.style.fontSize = "3.5rem";
 
+    // 両面の星ボタンの表示を同期
     const isFav = favoriteIds.includes(wordObj.id);
     document.querySelectorAll('.fav-toggle-btn').forEach(btn => {
         btn.textContent = isFav ? '★' : '☆';
@@ -223,7 +173,9 @@ function toggleMeaning() {
     document.getElementById('action-btn').textContent = isFlipped ? "意味を表示" : "意味を隠す";
 }
 
+// カードのクリックイベント（星ボタン以外）
 cardInner.onclick = (e) => {
+    // クリックされたのが星ボタン（またはその中の文字）でなければ反転
     if (!e.target.closest('.fav-toggle-btn')) {
         toggleMeaning();
     }
@@ -301,10 +253,11 @@ function toggleFav(id) {
     });
 }
 
+// 星ボタン単体へのクリックイベント設定
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.fav-toggle-btn');
-    if (btn && !btn.classList.contains('list-fav-btn')) { // リスト用は別途処理
-        e.stopPropagation();
+    if (btn) {
+        e.stopPropagation(); // カード反転を防止
         e.preventDefault();
         toggleFav(window.currentWord.id);
     }
@@ -316,10 +269,9 @@ document.getElementById('load-favorites-btn').onclick = () => {
     else alert("お気に入り登録がありません。");
 };
 
-document.getElementById('shuffle-toggle').onchange = (e) => { isShuffle = e.target.checked; saveSettings(); };
+document.getElementById('shuffle-toggle').onchange = (e) => { isShuffle = e.target.checked; };
 document.getElementById('question-mode').onchange = (e) => { 
     questionMode = e.target.value; 
-    saveSettings();
     if(window.currentWord) displayWord(window.currentWord);
 };
 document.getElementById('clear-all-favs-btn').onclick = () => {
@@ -334,59 +286,35 @@ document.getElementById('clear-all-favs-btn').onclick = () => {
 
 function renderWordList() {
     const term = document.getElementById('list-search').value.toLowerCase().trim();
-    const activeFilterBtn = document.querySelector('.filter-btn.active');
-    const filterType = activeFilterBtn ? activeFilterBtn.id : 'filter-all';
-
-    // × wordListContainer.innerHTML = '';
-    container.innerHTML = ''; // container に修正
-
+    // どのフィルタボタンが active かを判定
+    const activeFilter = document.querySelector('.filter-btn.active').id; 
+    wordListContainer.innerHTML = '';
+    
     allWords.filter(w => {
         const m = w.word.toLowerCase().includes(term) || w.meaning.toLowerCase().includes(term) || w.id.toString().includes(term);
         const isFav = favoriteIds.includes(w.id);
+        
         if (!m) return false;
-        if (filterType === 'filter-fav') return isFav;
-        if (filterType === 'filter-non-fav') return !isFav;
-        return true;
+        // フィルタ条件の分岐
+        if (activeFilter === 'filter-fav') return isFav;      // 星のみ
+        if (activeFilter === 'filter-non-fav') return !isFav;  // 星以外
+        return true; // すべて
     }).forEach(w => {
+        const isFav = favoriteIds.includes(w.id);
         const div = document.createElement('div');
         div.className = 'list-item';
-        const isFav = favoriteIds.includes(w.id);
-        div.innerHTML = `
-            <div class="list-id">ID: ${w.id}</div>
-            <div class="list-info">
-                <div class="list-word">${w.word}</div>
-                <div class="list-meaning">${w.meaning}</div>
-            </div>
-            <button class="list-fav-btn ${isFav ? 'active' : ''}" onclick="handleListFav(${w.id}, this)">
-                ${isFav ? '★' : '☆'}
-            </button>
-        `;
-        // × wordListContainer.appendChild(div);
-        container.appendChild(div); // container に修正
+        div.innerHTML = `<button class="list-fav-btn ${isFav?'active':''}" onclick="handleListFav(${w.id}, this)">${isFav?'★':'☆'}</button>
+            <span class="list-id">${w.id}</span>
+            <div class="list-info"><span class="list-word">${w.word}</span><span class="list-meaning">${w.meaning}</span></div>`;
+        wordListContainer.appendChild(div);
     });
 }
 
 document.getElementById('list-search').oninput = renderWordList;
-
-const filterBtns = ['filter-all', 'filter-fav', 'filter-non-fav'];
-filterBtns.forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) {
-        btn.onclick = function() {
-            filterBtns.forEach(bId => document.getElementById(bId).classList.remove('active'));
-            this.classList.add('active');
-            renderWordList();
-        };
-    }
-});
-
-window.handleListFav = (id, btn) => { 
-    toggleFav(id); 
-    btn.textContent = getStar(id); 
-    btn.classList.toggle('active', favoriteIds.includes(id)); 
-    const currentFilter = document.querySelector('.filter-btn.active').id;
-    if (currentFilter !== 'filter-all') renderWordList(); 
-};
+document.getElementById('filter-all').onclick = function() { this.classList.add('active'); document.getElementById('filter-fav').classList.remove('active'); renderWordList(); };
+document.getElementById('filter-fav').onclick = function() { this.classList.add('active'); document.getElementById('filter-all').classList.remove('active'); renderWordList(); };
+document.getElementById('filter-non-fav').onclick = function() { this.classList.add('active'); document.getElementById('filter-all').classList.remove('active'); renderWordList(); };
+window.handleListFav = (id, btn) => { toggleFav(id); btn.textContent = getStar(id); btn.classList.toggle('active'); if (document.getElementById('filter-fav').classList.contains('active')) renderWordList(); };
 
 document.getElementById('help-open-btn').onclick = () => modal.classList.add('active');
 const hideM = () => { modal.classList.remove('active'); document.getElementById('help-tab-guide').click(); };
@@ -396,7 +324,7 @@ window.onclick = (e) => { if(e.target == modal) hideM(); };
 
 const tG = document.getElementById('help-tab-guide'), tU = document.getElementById('help-tab-update');
 const cG = document.getElementById('help-guide-content'), cU = document.getElementById('help-update-content');
-if (tG && tU) {
+if (tG) {
     tG.onclick = () => { tG.classList.add('active'); tU.classList.remove('active'); cG.classList.remove('hidden'); cU.classList.add('hidden'); };
     tU.onclick = () => { tU.classList.add('active'); tG.classList.remove('active'); cU.classList.remove('hidden'); cG.classList.add('hidden'); };
 }
@@ -404,17 +332,39 @@ if (tG && tU) {
 const darkToggleSettings = document.getElementById('dark-mode-toggle-settings');
 function updateDarkModeUI(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
-    if (darkToggleSettings) {
-        darkToggleSettings.textContent = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
-    }
+    darkToggleSettings.textContent = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
     localStorage.setItem('dark_mode', isDark ? 'enabled' : 'disabled');
 }
-
 if (localStorage.getItem('dark_mode') === 'enabled') updateDarkModeUI(true);
-if (darkToggleSettings) {
-    darkToggleSettings.onclick = () => updateDarkModeUI(!document.body.classList.contains('dark-mode'));
+darkToggleSettings.onclick = () => updateDarkModeUI(!document.body.classList.contains('dark-mode'));
+
+// 設定を保存する関数
+function saveSettings() {
+    const settings = { isShuffle, questionMode };
+    localStorage.setItem('app_settings', JSON.stringify(settings));
 }
 
-loadCSV().then(() => {
-    loadSettings(); 
-});
+// 設定を読み込む関数
+function loadSettings() {
+    const saved = localStorage.getItem('app_settings');
+    if (saved) {
+        const settings = JSON.parse(saved);
+        isShuffle = settings.isShuffle;
+        questionMode = settings.questionMode;
+        document.getElementById('shuffle-toggle').checked = isShuffle;
+        document.getElementById('question-mode').value = questionMode;
+    }
+}
+
+// 星以外ボタンのイベント
+document.getElementById('filter-non-fav').onclick = function() {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    renderWordList();
+};
+
+// 既存のイベントに saveSettings() を追加で紐付け
+document.getElementById('shuffle-toggle').addEventListener('change', saveSettings);
+document.getElementById('question-mode').addEventListener('change', saveSettings);
+
+loadCSV();
