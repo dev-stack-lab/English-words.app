@@ -234,17 +234,58 @@ body.dark-mode .tab-btn.active { background: var(--card-bg); }
     outline: none;
 }
 
-/* style.css の一番最後に追加 */
-
-/* ダークモード時のリスト文字色を白にする */
-body.dark-mode .list-word { color: #ffffff !important; }
-body.dark-mode .list-meaning { color: #cbd5e1 !important; }
-
-/* 3つのボタンを綺麗に並べるための設定 */
-.filter-switch {
-    display: flex;
-    width: 100%;
-    max-width: 300px;
-    margin: 0 auto;
+/* --- リスト画面：IDと情報のレイアウト修正 --- */
+.list-item { 
+    display: flex; 
+    align-items: center; 
+    padding: 16px 20px; 
+    margin-bottom: 8px;
+    border-radius: 18px; 
+    background: transparent;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 12px; /* 全体の間隔を調整 */
 }
-.filter-btn { flex: 1; }
+
+.list-id-container {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* 「ID:」と「数字」の間の隙間 */
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 600;
+    flex-shrink: 0;
+    width: 65px; /* ラベルと数字が収まる幅を確保 */
+}
+
+.list-id-number {
+    font-family: 'JetBrains Mono', monospace; /* 数字を等幅にして見やすく */
+    color: #64748b;
+}
+
+/* --- ダークモード時のID色 --- */
+body.dark-mode .list-id-container {
+    color: #475569;
+}
+
+body.dark-mode .list-id-number {
+    color: #94a3b8;
+}
+
+/* --- 単語と意味のレイアウト調整 --- */
+.list-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.list-word { 
+    font-size: 1.25rem; 
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.list-meaning { 
+    font-size: 0.9rem; 
+    color: #64748b;
+}
