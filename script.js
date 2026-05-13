@@ -91,16 +91,47 @@ function loadProgress() {
 
 async function loadCSV() {
     try {
-        const res = await fetch('words.csv?t=' + Date.now());
+        // キャッシュを避けるためタイムスタンプを付与
+        const res = await fetch('english_only.csv?t=' + Date.now());
         const txt = await res.text();
+        
         allWords = txt.trim().split(/\r?\n/).map(line => {
+            // カンマまたはタブで分割
             const p = line.split(/[,\t]/);
-            if (p.length >= 2) return { id: parseInt(p[0]), word: p[1].trim(), meaning: p.slice(2).join(',').replace(/"/g, '').trim() };
+            if (p.length >= 2) {
+                return { 
+                    id: parseInt(p[0]), 
+                    word: p[1].trim(), 
+                    // 3列目以降を意味として結合
+                    meaning: p.slice(2).join(',').replace(/"/g, '').trim() 
+                };
+            }
             return null;
-        }).filter(w => w && !isNaN(w.id));
+        }).filter(w => {
+            // 基本チェック：データが存在し、IDが数値であること
+            if (!w || isNaN(w.id)) return false;
+
+            // 1. IDによる制限（ターゲット番号外をカット）
+            if (w.id >= 2027) return false;
+
+            // 2. アルファベットを含まないものは英単語ではないと判断（★最強のフィルター）
+            // 英単語であれば、必ず a-z または A-Z が含まれるはずです
+            const hasAlphabet = /[a-zA-Z]/.test(w.word);
+            if (!hasAlphabet) return false;
+
+            // 3. 漢字が含まれているものは除外
+            const hasKanji = /[\u4E00-\u9FFF]/.test(w.word);
+            if (hasKanji) return false;
+
+            return true;
+        });
+        
         updateFavCount();
         if (!loadProgress()) updateRange();
-    } catch (e) { wordDisplay.textContent = "CSVエラー"; }
+    } catch (e) { 
+        console.error(e);
+        wordDisplay.textContent = "CSVエラー"; 
+    }
 }
 
 function updateFavCount() { favCountDisplay.textContent = favoriteIds.length; }
@@ -137,7 +168,6 @@ function displayWord(wordObj) {
     else if (textLen > 8) wordDisplay.style.fontSize = "2.8rem";
     else wordDisplay.style.fontSize = "3.5rem";
 
-    // 両面の星ボタンの表示を同期
     const isFav = favoriteIds.includes(wordObj.id);
     document.querySelectorAll('.fav-toggle-btn').forEach(btn => {
         btn.textContent = isFav ? '★' : '☆';
@@ -193,9 +223,7 @@ function toggleMeaning() {
     document.getElementById('action-btn').textContent = isFlipped ? "意味を表示" : "意味を隠す";
 }
 
-// カードのクリックイベント（星ボタン以外）
 cardInner.onclick = (e) => {
-    // クリックされたのが星ボタン（またはその中の文字）でなければ反転
     if (!e.target.closest('.fav-toggle-btn')) {
         toggleMeaning();
     }
@@ -273,11 +301,10 @@ function toggleFav(id) {
     });
 }
 
-// 星ボタン単体へのクリックイベント設定
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.fav-toggle-btn');
-    if (btn) {
-        e.stopPropagation(); // カード反転を防止
+    if (btn && !btn.classList.contains('list-fav-btn')) { // リスト用は別途処理
+        e.stopPropagation();
         e.preventDefault();
         toggleFav(window.currentWord.id);
     }
@@ -289,9 +316,10 @@ document.getElementById('load-favorites-btn').onclick = () => {
     else alert("お気に入り登録がありません。");
 };
 
-document.getElementById('shuffle-toggle').onchange = (e) => { isShuffle = e.target.checked; };
+document.getElementById('shuffle-toggle').onchange = (e) => { isShuffle = e.target.checked; saveSettings(); };
 document.getElementById('question-mode').onchange = (e) => { 
     questionMode = e.target.value; 
+    saveSettings();
     if(window.currentWord) displayWord(window.currentWord);
 };
 document.getElementById('clear-all-favs-btn').onclick = () => {
@@ -306,29 +334,28 @@ document.getElementById('clear-all-favs-btn').onclick = () => {
 
 function renderWordList() {
     const term = document.getElementById('list-search').value.toLowerCase().trim();
-    const filterType = 
-        document.getElementById('filter-fav').classList.contains('active') ? 'fav' :
-        document.getElementById('filter-non-fav').classList.contains('active') ? 'non-fav' : 'all';
+    const activeFilterBtn = document.querySelector('.filter-btn.active');
+    const filterType = activeFilterBtn ? activeFilterBtn.id : 'filter-all';
 
     wordListContainer.innerHTML = '';
     allWords.filter(w => {
         const m = w.word.toLowerCase().includes(term) || w.meaning.toLowerCase().includes(term) || w.id.toString().includes(term);
         const isFav = favoriteIds.includes(w.id);
         if (!m) return false;
-        if (filterType === 'fav') return isFav;
-        if (filterType === 'non-fav') return !isFav;
+        if (filterType === 'filter-fav') return isFav;
+        if (filterType === 'filter-non-fav') return !isFav;
         return true;
     }).forEach(w => {
         const div = document.createElement('div');
-        div.className = 'word-item';
+        div.className = 'list-item'; // CSSのクラス名に合わせました
         const isFav = favoriteIds.includes(w.id);
         div.innerHTML = `
-            <div class="word-info">
-                <div class="word-id">ID: ${w.id}</div>
-                <div class="word-text">${w.word}</div>
-                <div class="word-meaning">${w.meaning}</div>
+            <div class="list-id">ID: ${w.id}</div>
+            <div class="list-info">
+                <div class="list-word">${w.word}</div>
+                <div class="list-meaning">${w.meaning}</div>
             </div>
-            <button class="fav-btn list-fav-btn ${isFav ? 'active' : ''}" onclick="handleListFav(${w.id}, this)">
+            <button class="list-fav-btn ${isFav ? 'active' : ''}" onclick="handleListFav(${w.id}, this)">
                 ${isFav ? '★' : '☆'}
             </button>
         `;
@@ -338,7 +365,6 @@ function renderWordList() {
 
 document.getElementById('list-search').oninput = renderWordList;
 
-// フィルターボタンのイベント設定（修正版）
 const filterBtns = ['filter-all', 'filter-fav', 'filter-non-fav'];
 filterBtns.forEach(id => {
     const btn = document.getElementById(id);
@@ -354,7 +380,7 @@ filterBtns.forEach(id => {
 window.handleListFav = (id, btn) => { 
     toggleFav(id); 
     btn.textContent = getStar(id); 
-    btn.classList.toggle('active'); 
+    btn.classList.toggle('active', favoriteIds.includes(id)); 
     const currentFilter = document.querySelector('.filter-btn.active').id;
     if (currentFilter !== 'filter-all') renderWordList(); 
 };
