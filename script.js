@@ -319,11 +319,45 @@ function renderWordList() {
         if (filterType === 'non-fav') return !isFav;
         return true;
     }).forEach(w => {
+        const div = document.createElement('div');
+        div.className = 'word-item';
+        const isFav = favoriteIds.includes(w.id);
+        div.innerHTML = `
+            <div class="word-info">
+                <div class="word-id">ID: ${w.id}</div>
+                <div class="word-text">${w.word}</div>
+                <div class="word-meaning">${w.meaning}</div>
+            </div>
+            <button class="fav-btn list-fav-btn ${isFav ? 'active' : ''}" onclick="handleListFav(${w.id}, this)">
+                ${isFav ? '★' : '☆'}
+            </button>
+        `;
+        wordListContainer.appendChild(div);
+    });
+}
 
 document.getElementById('list-search').oninput = renderWordList;
-document.getElementById('filter-all').onclick = function() { this.classList.add('active'); document.getElementById('filter-fav').classList.remove('active'); renderWordList(); };
-document.getElementById('filter-fav').onclick = function() { this.classList.add('active'); document.getElementById('filter-all').classList.remove('active'); renderWordList(); };
-window.handleListFav = (id, btn) => { toggleFav(id); btn.textContent = getStar(id); btn.classList.toggle('active'); if (document.getElementById('filter-fav').classList.contains('active')) renderWordList(); };
+
+// フィルターボタンのイベント設定（修正版）
+const filterBtns = ['filter-all', 'filter-fav', 'filter-non-fav'];
+filterBtns.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) {
+        btn.onclick = function() {
+            filterBtns.forEach(bId => document.getElementById(bId).classList.remove('active'));
+            this.classList.add('active');
+            renderWordList();
+        };
+    }
+});
+
+window.handleListFav = (id, btn) => { 
+    toggleFav(id); 
+    btn.textContent = getStar(id); 
+    btn.classList.toggle('active'); 
+    const currentFilter = document.querySelector('.filter-btn.active').id;
+    if (currentFilter !== 'filter-all') renderWordList(); 
+};
 
 document.getElementById('help-open-btn').onclick = () => modal.classList.add('active');
 const hideM = () => { modal.classList.remove('active'); document.getElementById('help-tab-guide').click(); };
@@ -333,7 +367,7 @@ window.onclick = (e) => { if(e.target == modal) hideM(); };
 
 const tG = document.getElementById('help-tab-guide'), tU = document.getElementById('help-tab-update');
 const cG = document.getElementById('help-guide-content'), cU = document.getElementById('help-update-content');
-if (tG) {
+if (tG && tU) {
     tG.onclick = () => { tG.classList.add('active'); tU.classList.remove('active'); cG.classList.remove('hidden'); cU.classList.add('hidden'); };
     tU.onclick = () => { tU.classList.add('active'); tG.classList.remove('active'); cU.classList.remove('hidden'); cG.classList.add('hidden'); };
 }
@@ -341,11 +375,16 @@ if (tG) {
 const darkToggleSettings = document.getElementById('dark-mode-toggle-settings');
 function updateDarkModeUI(isDark) {
     document.body.classList.toggle('dark-mode', isDark);
-    darkToggleSettings.textContent = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
+    if (darkToggleSettings) {
+        darkToggleSettings.textContent = isDark ? '☀️ ライトモード' : '🌙 ダークモード';
+    }
     localStorage.setItem('dark_mode', isDark ? 'enabled' : 'disabled');
 }
+
 if (localStorage.getItem('dark_mode') === 'enabled') updateDarkModeUI(true);
-darkToggleSettings.onclick = () => updateDarkModeUI(!document.body.classList.contains('dark-mode'));
+if (darkToggleSettings) {
+    darkToggleSettings.onclick = () => updateDarkModeUI(!document.body.classList.contains('dark-mode'));
+}
 
 loadCSV().then(() => {
     loadSettings(); 
