@@ -92,7 +92,7 @@ function loadProgress() {
 async function loadCSV() {
     try {
         // キャッシュを避けるためタイムスタンプを付与
-        const res = await fetch('english_only.csv?t=' + Date.now());
+        const res = await fetch('./english_only.csv?t=' + Date.now());
         const txt = await res.text();
         
         allWords = txt.trim().split(/\r?\n/).map(line => {
