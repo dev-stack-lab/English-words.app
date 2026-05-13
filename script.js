@@ -8,7 +8,7 @@ let questionMode = 'en-ja';
 const wordDisplay = document.getElementById('word-display');
 const meaningDisplay = document.getElementById('meaning-display');
 const favCountDisplay = document.getElementById('fav-count-display');
-const wordListContainer = document.getElementById('word-list-container');
+const container = document.getElementById('word-list-container');
 const resultScreen = document.getElementById('result-screen');
 const modal = document.getElementById('help-modal');
 const cardInner = document.getElementById('card-inner');
@@ -337,7 +337,9 @@ function renderWordList() {
     const activeFilterBtn = document.querySelector('.filter-btn.active');
     const filterType = activeFilterBtn ? activeFilterBtn.id : 'filter-all';
 
-    wordListContainer.innerHTML = '';
+    // × wordListContainer.innerHTML = '';
+    container.innerHTML = ''; // container に修正
+
     allWords.filter(w => {
         const m = w.word.toLowerCase().includes(term) || w.meaning.toLowerCase().includes(term) || w.id.toString().includes(term);
         const isFav = favoriteIds.includes(w.id);
@@ -347,7 +349,7 @@ function renderWordList() {
         return true;
     }).forEach(w => {
         const div = document.createElement('div');
-        div.className = 'list-item'; // CSSのクラス名に合わせました
+        div.className = 'list-item';
         const isFav = favoriteIds.includes(w.id);
         div.innerHTML = `
             <div class="list-id">ID: ${w.id}</div>
@@ -359,7 +361,8 @@ function renderWordList() {
                 ${isFav ? '★' : '☆'}
             </button>
         `;
-        wordListContainer.appendChild(div);
+        // × wordListContainer.appendChild(div);
+        container.appendChild(div); // container に修正
     });
 }
 
