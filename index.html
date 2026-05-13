@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>シスタン学習アプリ</title>
+    <title>シス単</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -85,7 +85,7 @@
                     <button id="filter-non-fav" class="filter-btn">星以外</button>
                 </div>
             </div>
-                <div id="word-list-container" class="word-list-scroll"></div>
+            <div id="word-list-container" class="word-list-scroll"></div>
         </div>
 
         <div id="view-settings" class="view-content hidden">
@@ -103,7 +103,7 @@
                     <hr>
                     <div class="setting-row">
                         <span>出題形式</span>
-                        <select id="question-mode" style="padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                        <select id="question-mode">
                             <option value="en-ja">英語 → 日本語</option>
                             <option value="ja-en">日本語 → 英語</option>
                         </select>
@@ -134,14 +134,14 @@
                     <li><strong>星ボタン:</strong> 苦手な単語をチェック。</li>
                 </ul>
                 <div class="feedback-box">
-                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdHSGnIFEd-v2-WndlVyD83elhbhNm5VcRY4HtlsZS0eN50Bw/viewform" target="_blank" rel="noopener noreferrer" class="feedback-text-link">フィードバックを送る ↗</a>
+                    <a href="https://docs.google.com/forms/d/e/1FAIpQLSe9FcG5hoG2-lfu0ZQgEvkcwsFOVURCvbd8HxnBQFPSIu_Drw/viewform?usp=preview" target="_blank" rel="noopener noreferrer" class="feedback-text-link">フィードバックを送る ↗</a>
                 </div>
             </div>
             <div id="help-update-content" class="hidden">
                 <ul class="help-list update-history">
-                    <li><strong>v1.8.2:</strong> 学習一覧の項目に「星以外」を追加</li>
-                    <li><strong>v1.8.1:</strong> ダークモードの際に学習一覧の単語の色を白にするよう調整</li>
-                    <li><strong>v1.8.0:</strong> タブを閉じても閉じる前の設定を引き継ぐよう調整</li>
+                    <li><strong>v1.8.2:</strong>ダークモードにした際に単語一覧の文字が白色になるよう変更</li>
+                    <li><strong>v1.8.1:</strong>星以外の単語の欄を追加</li>
+                    <li><strong>v1.8.0:</strong>タブを閉じても設定が保存されるよう変更</li>
                 </ul>
             </div>
             <button id="help-close-btn" class="main-btn">閉じる</button>
