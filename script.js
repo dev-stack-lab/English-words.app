@@ -46,6 +46,27 @@ function saveProgress() {
     localStorage.setItem('study_progress', JSON.stringify(data));
 }
 
+function saveSettings() {
+    const settings = {
+        isShuffle: isShuffle,
+        questionMode: questionMode,
+        darkMode: document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled'
+    };
+    localStorage.setItem('app_settings', JSON.stringify(settings));
+}
+
+function loadSettings() {
+    const saved = localStorage.getItem('app_settings');
+    if (saved) {
+        const settings = JSON.parse(saved);
+        isShuffle = settings.isShuffle;
+        questionMode = settings.questionMode;
+        document.getElementById('shuffle-toggle').checked = isShuffle;
+        document.getElementById('question-mode').value = questionMode;
+        if (settings.darkMode === 'enabled') updateDarkModeUI(true);
+    }
+}
+
 function loadProgress() {
     const saved = localStorage.getItem('study_progress');
     if (!saved) return false;
@@ -285,21 +306,19 @@ document.getElementById('clear-all-favs-btn').onclick = () => {
 
 function renderWordList() {
     const term = document.getElementById('list-search').value.toLowerCase().trim();
-    const onlyFav = document.getElementById('filter-fav').classList.contains('active');
+    const filterType = 
+        document.getElementById('filter-fav').classList.contains('active') ? 'fav' :
+        document.getElementById('filter-non-fav').classList.contains('active') ? 'non-fav' : 'all';
+
     wordListContainer.innerHTML = '';
     allWords.filter(w => {
         const m = w.word.toLowerCase().includes(term) || w.meaning.toLowerCase().includes(term) || w.id.toString().includes(term);
-        return onlyFav ? (m && favoriteIds.includes(w.id)) : m;
-    }).forEach(w => {
         const isFav = favoriteIds.includes(w.id);
-        const div = document.createElement('div');
-        div.className = 'list-item';
-        div.innerHTML = `<button class="list-fav-btn ${isFav?'active':''}" onclick="handleListFav(${w.id}, this)">${isFav?'★':'☆'}</button>
-            <span class="list-id">${w.id}</span>
-            <div class="list-info"><span class="list-word">${w.word}</span><span class="list-meaning">${w.meaning}</span></div>`;
-        wordListContainer.appendChild(div);
-    });
-}
+        if (!m) return false;
+        if (filterType === 'fav') return isFav;
+        if (filterType === 'non-fav') return !isFav;
+        return true;
+    }).forEach(w => {
 
 document.getElementById('list-search').oninput = renderWordList;
 document.getElementById('filter-all').onclick = function() { this.classList.add('active'); document.getElementById('filter-fav').classList.remove('active'); renderWordList(); };
