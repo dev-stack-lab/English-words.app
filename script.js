@@ -311,11 +311,29 @@ function renderWordList() {
 }
 
 document.getElementById('list-search').oninput = renderWordList;
-document.getElementById('filter-all').onclick = function() { this.classList.add('active'); document.getElementById('filter-fav').classList.remove('active'); renderWordList(); };
-document.getElementById('filter-fav').onclick = function() { this.classList.add('active'); document.getElementById('filter-all').classList.remove('active'); renderWordList(); };
-document.getElementById('filter-non-fav').onclick = function() { this.classList.add('active'); document.getElementById('filter-all').classList.remove('active'); renderWordList(); };
-window.handleListFav = (id, btn) => { toggleFav(id); btn.textContent = getStar(id); btn.classList.toggle('active'); if (document.getElementById('filter-fav').classList.contains('active')) renderWordList(); };
 
+// 1. 共通の切り替えルールを作る
+function switchFilter(btn) {
+    // 枠内にある全てのボタン（.filter-btn）から一旦 active を消す
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    // 押されたボタンだけに active をつける
+    btn.classList.add('active');
+    // リストを表示し直す
+    renderWordList();
+}
+
+// 2. 各ボタンをクリックした時に上のルールを実行する
+document.getElementById('filter-all').onclick = function() { switchFilter(this); };
+document.getElementById('filter-fav').onclick = function() { switchFilter(this); };
+document.getElementById('filter-non-fav').onclick = function() { switchFilter(this); };
+
+window.handleListFav = (id, btn) => { 
+    toggleFav(id); 
+    btn.textContent = getStar(id); 
+    btn.classList.toggle('active'); 
+    const activeId = document.querySelector('.filter-btn.active').id;
+    if (activeId !== 'filter-all') renderWordList(); 
+};
 document.getElementById('help-open-btn').onclick = () => modal.classList.add('active');
 const hideM = () => { modal.classList.remove('active'); document.getElementById('help-tab-guide').click(); };
 document.getElementById('help-close-btn').onclick = hideM;
